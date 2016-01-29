@@ -10,5 +10,5 @@ The application currently can:
 * sort placemarks according to it's shape inside file(s)
 
 you can download .jar with all necessary libraries in it to run
-it on your machine https://cloud.mail.ru/public/NEbJ/gtLiUU3ns
+it on your machine https://goo.gl/LlXZG8 (Mail.ru Cloud)
 the program has no GUI you will need to run it from the command line
