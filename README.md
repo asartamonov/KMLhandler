@@ -8,3 +8,7 @@ The application currently can:
 * merge multiple files
 * separate one file to several
 * sort placemarks according to it's shape inside file(s)
+
+you can download .jar with all necessary libraries in it to run
+it on your machine https://cloud.mail.ru/public/NEbJ/gtLiUU3ns
+the program has no GUI you will need to run it from the command line
