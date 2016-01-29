@@ -2,9 +2,6 @@ package ru.asartamonov.kmlhandler;
 
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -83,7 +80,6 @@ class KmlFileWriter {
         boolean isPoint, isPolygon, isTrack;
         isPoint = placemark.getElementsByTagName("Point").getLength() > 0;
         isPolygon = placemark.getElementsByTagName("Polygon").getLength() > 0;
-        isTrack = placemark.getElementsByTagName("LineString").getLength() > 0;
         String placemarkType = isPoint ? "Point_" : isPolygon ? "Polygon_" : "Linestring_";
         return placemarkType;
     }
@@ -94,7 +90,14 @@ class KmlFileWriter {
         return placemarkName;
     }
 
-    boolean write(Collection<Document> collection, boolean addShapeTypePrefix) {
+    private String getDocumentName(Document document) {
+        String documentName = document.getElementsByTagName("name").item(0).getTextContent();
+        documentName = documentName.replaceAll("[;\\\\/:*?\"|]", "_");
+        documentName = documentName.substring(0, documentName.length()-3);
+        return documentName;
+    }
+
+    boolean write(Collection<Document> collection, boolean addShapeTypePrefix, boolean addDocumentName) {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = null;
         try {
@@ -109,16 +112,15 @@ class KmlFileWriter {
         int folderPathLength = fileNameBuilder.length();
         for (Document document : collection) {
             DOMSource source = new DOMSource(document);
-            if (addShapeTypePrefix)
-                fileNameBuilder.append(getSinglePlacemarkDocumentType(document));
-            fileNameBuilder.append(getPlacemarkName(document));
+            fileNameBuilder.append(addShapeTypePrefix == true ? getSinglePlacemarkDocumentType(document) : "");
+            fileNameBuilder.append(addDocumentName == true ? getDocumentName(document) : getPlacemarkName(document));
             fileNameBuilder.append(".kml");
             File outputFile;
             //check for files with the same name to prevent rewriting and data lost
             while (new File(fileNameBuilder.toString()).exists()) {
                 fileNameBuilder.insert(fileNameBuilder.length() - 4, "_");
             }
-            if (collection.size() == 1)
+            if (collection.size() == 1 && addDocumentName == false)
                 fileNameBuilder.insert(fileNameBuilder.length() - 4, " and " +
                         (document.getElementsByTagName("Placemark").getLength() - 1) + " more placemarks");
             outputFile = new File(fileNameBuilder.toString());
@@ -223,7 +225,7 @@ public class KmlHandler {
                 KmlFileWriter writer = new KmlFileWriter(folder);
                 KmlTransformer<Document> transformer = new KmlPlacemarkUniter();
                 Collection<Document> output = transformer.transform(input);
-                boolean isOK = writer.write(output, false);
+                boolean isOK = writer.write(output, false, false);
                 System.out.println("All .kml files processed normally -- " + isOK);
             }
         },
@@ -236,7 +238,7 @@ public class KmlHandler {
                 KmlFileWriter writer = new KmlFileWriter(folder);
                 KmlTransformer<Document> transformer = new KmlPlacemarkSeparator();
                 Collection<Document> output = transformer.transform(input);
-                boolean isOK = writer.write(output, false);
+                boolean isOK = writer.write(output, false, false);
                 System.out.println("All .kml files processed normally -- " + isOK);
             }
         },
@@ -249,7 +251,7 @@ public class KmlHandler {
                 KmlFileWriter writer = new KmlFileWriter(folder);
                 KmlTransformer<Document> transformer = new KmlPlacemarkTypeSorter();
                 Collection<Document> output = transformer.transform(input);
-                boolean isOK = writer.write(output, false);
+                boolean isOK = writer.write(output, false, true);
                 System.out.println("All .kml files processed normally -- " + isOK);
             }
         },
@@ -263,7 +265,7 @@ public class KmlHandler {
                 KmlTransformer<Document> separator = new KmlPlacemarkUniter();
                 KmlTransformer<Document> sorter = new KmlPlacemarkTypeSorter();
                 Collection<Document> output = sorter.transform(separator.transform(input));
-                boolean isOK = writer.write(output, false);
+                boolean isOK = writer.write(output, false, false);
                 System.out.println("All .kml files processed normally -- " + isOK);
             }
         },
@@ -276,7 +278,7 @@ public class KmlHandler {
                 KmlFileWriter writer = new KmlFileWriter(folder);
                 KmlTransformer<Document> separator = new KmlPlacemarkSeparator();
                 Collection<Document> output = separator.transform(input);
-                boolean isOK = writer.write(output, true);
+                boolean isOK = writer.write(output, true, false);
                 System.out.println("All .kml files processed normally -- " + isOK);
             }
         };
