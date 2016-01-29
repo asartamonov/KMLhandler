@@ -77,7 +77,7 @@ class KmlFileWriter {
     }
 
     private String getSinglePlacemarkDocumentType(Document placemark) {
-        boolean isPoint, isPolygon, isTrack;
+        boolean isPoint, isPolygon;
         isPoint = placemark.getElementsByTagName("Point").getLength() > 0;
         isPolygon = placemark.getElementsByTagName("Polygon").getLength() > 0;
         String placemarkType = isPoint ? "Point_" : isPolygon ? "Polygon_" : "Linestring_";
@@ -92,8 +92,7 @@ class KmlFileWriter {
 
     private String getDocumentName(Document document) {
         String documentName = document.getElementsByTagName("name").item(0).getTextContent();
-        documentName = documentName.replaceAll("[;\\\\/:*?\"|]", "_");
-        documentName = documentName.substring(0, documentName.length()-3);
+        documentName = documentName.replaceAll("[;\\\\/:*?\"|]|(.kml|.kmz|.xml)", "_");
         return documentName;
     }
 
@@ -147,8 +146,9 @@ class KmlFileWriter {
 }
 
 /**
- * Main class of KmlHandler app, calls other parts of the app and communicates with a user.
- * Contains main method only and String static fileds with usage rules and user input tips.
+ * Main class of KmlHandler app, calls other modules of the app and communicates with a user.
+ * Contains main method, String static fields with usage rules and user input tips, and the
+ * main part - enum with working modes.
  */
 public class KmlHandler {
     private static final String HELLO;
@@ -179,7 +179,7 @@ public class KmlHandler {
 
     /**
      * Main method calls KmlFileReader class to read files in user defined folder, creates KmlTransformer accordingly
-     * to user defined mode of application working, writes result to disk.
+     * to user defined mode of application working, calls KmlFileWriter and it writes result to disk.
      *
      * @param args app is to be used with userinput after the launching, so it neglects args from command
      *             line before it is launched.
@@ -195,7 +195,6 @@ public class KmlHandler {
         String userInput;
         KmlFileReader kmlReader = new KmlFileReader();
         //use regex "^-(u|s|ux|sx) ([A-Za-z]:[\\|\/].+\S$)" to check user input fits "-flag(s) address" form
-        //old (^(-u |-s )([A-Za-z]:(\\|\/)(.| )+)(\S$))
         Pattern pattern = Pattern.compile("^-(u|s|ux|sx|x) ([A-Za-z]:[\\\\|\\/].+\\S$)");
         do {
             System.out.println(HELLO);
