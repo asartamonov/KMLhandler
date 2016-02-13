@@ -14,8 +14,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,12 +62,13 @@ class KmlFileWriter {
     private File outputFolder;
 
     KmlFileWriter(File folder) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm");
         StringBuilder sb = new StringBuilder();
         sb.append(folder.getAbsolutePath());
         sb.append(File.separator);
         sb.append("KmlHandler_results_");
-        sb.append(sdf.format(Calendar.getInstance().getTime()));
+        sb.append(date.format(formatter));
         outputFolder = new File(sb.toString());
         while (outputFolder.exists()) {
             sb.append("_");
