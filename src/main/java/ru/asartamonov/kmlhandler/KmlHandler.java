@@ -15,6 +15,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,13 +63,13 @@ class KmlFileWriter {
     private File outputFolder;
 
     KmlFileWriter(File folder) {
-        LocalDate date = LocalDate.now();
+        LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm");
         StringBuilder sb = new StringBuilder();
         sb.append(folder.getAbsolutePath());
         sb.append(File.separator);
         sb.append("KmlHandler_results_");
-        sb.append(date.format(formatter));
+        sb.append(time.format(formatter));
         outputFolder = new File(sb.toString());
         while (outputFolder.exists()) {
             sb.append("_");
@@ -120,7 +121,8 @@ class KmlFileWriter {
             fileNameBuilder.append(addDocumentName == true ? getDocumentName(document) : getPlacemarkName(document));
             fileNameBuilder.append(".kml");
             File outputFile;
-            //check for files with the same name to prevent rewriting and data lost
+            /*check for files with the same name
+            to prevent rewriting and data lost*/
             while (new File(fileNameBuilder.toString()).exists()) {
                 fileNameBuilder.insert(fileNameBuilder.length() - 4, "_");
             }
@@ -144,8 +146,8 @@ class KmlFileWriter {
             fileNameBuilder.delete(folderPathLength, fileNameBuilder.length());
         }
         File[] kmlFile = outputFolder.listFiles((FilenameFilter) new SuffixFileFilter(".kml"));
-        System.out.println("processed files " + collection.size() +
-                "\nresult saved at " + outputFolder.toString());
+        System.out.println("Files wrote: " + collection.size() +
+                "\nDestination folder: " + outputFolder.toString());
         return kmlFile.length == collection.size();
     }
 }
